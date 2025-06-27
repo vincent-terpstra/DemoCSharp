@@ -1,4 +1,6 @@
-﻿namespace Demo.API.Options;
+﻿using Demo.API.Options;
+
+namespace Demo.API.Models;
 
 public class Person
 {

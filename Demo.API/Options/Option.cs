@@ -12,6 +12,9 @@ public readonly struct Option<T> where T : class
 
     public static Option<T> None()
         => new();
+    
+    public static Option<T> Create(T? value)
+        => value is null ? None() : Some(value);
 
     public Option<TResult> Map<TResult>(Func<T, TResult> map)
         where TResult : class =>
