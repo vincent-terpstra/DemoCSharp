@@ -1,6 +1,6 @@
 ﻿namespace Demo.API.Options;
 
-public readonly struct Option<T> where T : class
+public readonly struct Option<T> : IEquatable<Option<T>> where T : class
 {
     private readonly T? _content;
 
@@ -12,7 +12,7 @@ public readonly struct Option<T> where T : class
 
     public static Option<T> None()
         => new();
-    
+
     public static Option<T> Create(T? value)
         => value is null ? None() : Some(value);
 
@@ -22,4 +22,19 @@ public readonly struct Option<T> where T : class
 
     public T Reduce(T @default)
         => _content ?? @default;
+
+    public bool Equals(Option<T> other)
+        => _content?.Equals(other._content) ?? false;
+
+    public override bool Equals(object? obj)
+        => obj is Option<T> other && Equals(other);
+    
+    public override int GetHashCode()
+        => _content?.GetHashCode() ?? 0;
+    
+    public static bool operator ==(Option<T> left, Option<T> right)
+        => left.Equals(right);
+    
+    public static bool operator !=(Option<T> left, Option<T> right)
+        => !left.Equals(right);
 }
