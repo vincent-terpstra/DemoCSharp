@@ -1,40 +1,66 @@
 ﻿namespace Demo.API.Options;
 
-public readonly struct Option<T> : IEquatable<Option<T>> where T : class
+public sealed class None<T> : Option<T>
+    where T : class
 {
-    private readonly T? _content;
+    public override Option<TResult> Map<TResult>(Func<T, TResult> map)
+        => Option<TResult>.None();
 
-    private Option(T? content = null) =>
-        (_content) = (content);
+    public override T Reduce(T @default)
+        => @default;
 
+    public override T Reduce(Func<T> @default)
+        => @default();
+
+    public override bool Equals(Option<T>? other)
+        => false;
+
+    public override int GetHashCode()
+        => 0;
+}
+
+public sealed class Some<T> : Option<T>
+    where T : class
+{
+    private readonly T _value;
+
+    public Some(T value)
+        => _value = value;
+
+    public override Option<TResult> Map<TResult>(Func<T, TResult> map)
+        => Option<TResult>.Some(map(_value));
+
+    public override T Reduce(T @default)
+        => _value;
+
+    public override T Reduce(Func<T> @default)
+        => _value;
+
+    public override bool Equals(Option<T>? other)
+        => other is Some<T> some && _value.Equals(some._value);
+    
+    public override int GetHashCode()
+        => _value.GetHashCode();
+}
+
+public abstract class Option<T>
+    : IEquatable<Option<T>>
+    where T : class
+{
     public static Option<T> Some(T value)
-        => new(value);
+        => new Some<T>(value);
 
     public static Option<T> None()
-        => new();
+        => new None<T>();
 
     public static Option<T> Create(T? value)
         => value is null ? None() : Some(value);
 
-    public Option<TResult> Map<TResult>(Func<T, TResult> map)
-        where TResult : class =>
-        new(_content is null ? null : map(_content));
+    public abstract Option<TResult> Map<TResult>(Func<T, TResult> map)
+        where TResult : class;
 
-    public T Reduce(T @default)
-        => _content ?? @default;
+    public abstract T Reduce(T @default);
 
-    public bool Equals(Option<T> other)
-        => _content?.Equals(other._content) ?? false;
-
-    public override bool Equals(object? obj)
-        => obj is Option<T> other && Equals(other);
-    
-    public override int GetHashCode()
-        => _content?.GetHashCode() ?? 0;
-    
-    public static bool operator ==(Option<T> left, Option<T> right)
-        => left.Equals(right);
-    
-    public static bool operator !=(Option<T> left, Option<T> right)
-        => !left.Equals(right);
+    public abstract T Reduce(Func<T> @default);
+    public abstract bool Equals(Option<T>? other);
 }
